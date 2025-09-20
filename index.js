@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 //  Routes
-app.get("admin/verificar_qr", (req, res) => {
+app.get("/admin/verificar_qr", (req, res) => {
   console.log(req.query.qrToken);
   res.json({
     status: true,
