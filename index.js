@@ -11,26 +11,54 @@ app.use(cors());
 app.use(express.json());
 
 //  Routes
+app.get("/listadoInvitados", async (req, res) => {
+  const data = await db("invitados").select(
+    "id",
+    "name",
+    "adicional",
+    db.raw(`CASE(token)
+      WHEN '' THEN 'No'
+      ELSE 'Sí'
+    END AS token_generado`),
+    db.raw(`CASE(ingreso)
+      WHEN true THEN 'Ingresó'
+      ELSE 'Pendiente'
+    END AS ingreso`)
+  );
+  res.json(data);
+});
+
 app.get("/invitados", async (req, res) => {
   const data = await db("invitados").select(
     "id",
     "name",
     "adicional",
-    "ingreso"
+    db.raw(`CASE(ingreso)
+      WHEN true THEN 'Ingresó'
+      ELSE 'Pendiente'
+    END AS ingreso`)
   );
   res.json(data);
 });
 
 app.post("/generarToken", async (req, res) => {
   const { invitadoId } = req.body;
+
   //  Generación del token
   const token = generarToken(String(invitadoId));
+
   await db("invitados").where("id", "=", invitadoId).update({
     token: token,
   });
+
+  const data = await db("invitados")
+    .select("name", "adicional")
+    .where("id", "=", invitadoId)
+    .first();
+
   res.json({
-    status: "success",
-    message: "Token generado",
+    token: token,
+    data: data,
   });
 });
 
@@ -44,7 +72,7 @@ app.post("/verificarQr", async (req, res) => {
 
   res.json({
     status: data ? true : false,
-    qrData: { data },
+    qrData: data,
   });
 });
 
