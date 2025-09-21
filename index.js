@@ -76,6 +76,18 @@ app.post("/verificarQr", async (req, res) => {
   });
 });
 
+app.post("/registrarInvitado", async (req, res) => {
+  const { name, adicional } = req.body;
+  await db("invitados").insert({
+    name: name,
+    adicional: adicional,
+  });
+  res.json({
+    status: "success",
+    detail: "Invitado registrado",
+  });
+});
+
 app.post("/registrarEntrada", async (req, res) => {
   const { invitadoId } = req.body;
   await db("invitados").where("id", "=", invitadoId).update({
